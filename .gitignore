@@ -46,3 +46,6 @@ dist/
 .envrc
 .python-version
 
+ml/data/raw
+ml/data/processed
+ml/models/*.pkl
