@@ -66,16 +66,13 @@ def _download_model_if_needed():
 # Lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Ejecuta setup al arrancar y cleanup al apagar."""
     setup_logging()
-
-    # Descargar modelo si no está en disco (producción) o ya existe (desarrollo)
     _download_model_if_needed()
-
     from src.services.predictions import get_predictor
-    from src.services.storage import get_supabase_client
-    client = get_supabase_client()
-    client.storage.from_(settings.SUPABASE_BUCKET).list()  # calentamiento
+    if settings.is_production:
+        from src.services.storage import get_supabase_client
+        client = get_supabase_client()
+        client.storage.from_(settings.SUPABASE_BUCKET).list()
     get_predictor()
     yield
 
