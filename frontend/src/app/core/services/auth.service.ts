@@ -2,7 +2,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, switchMap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface LoginRequest {
@@ -64,10 +64,13 @@ export class AuthService {
 
   login(data: LoginRequest): Observable<TokenResponse> {
     return this.http.post<TokenResponse>(`${environment.apiUrl}/auth/login`, data).pipe(
-      tap(tokens => {
-        this.saveTokens(tokens);
-        this.loadProfile();
-      }),
+      tap(tokens => this.saveTokens(tokens)),
+      switchMap(tokens =>
+        this.http.get<UserProfile>(`${environment.apiUrl}/users/me`).pipe(
+          tap(user => this._currentUser.set(user)),
+          map(() => tokens),
+        )
+      ),
     );
   }
 

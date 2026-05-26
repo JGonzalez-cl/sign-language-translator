@@ -157,6 +157,26 @@
           >
             Historial
           </a>
+          <!-- Subtabs del traductor — solo visibles en /translator -->
+          @if (router.url.includes('/translator')) {
+            <div class="flex gap-1 ml-4 border-l border-gray-200 pl-4">
+              <a routerLink="/translator/image"
+                routerLinkActive="text-blue-600 bg-blue-50"
+                class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition">
+                Imagen
+              </a>
+              <a routerLink="/translator/video"
+                routerLinkActive="text-blue-600 bg-blue-50"
+                class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition">
+                Vídeo
+              </a>
+              <a routerLink="/translator/live"
+                routerLinkActive="text-blue-600 bg-blue-50"
+                class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition">
+                Live
+              </a>
+            </div>
+          }
         </nav>
 
         <!-- Avatar — activa el sidebar -->

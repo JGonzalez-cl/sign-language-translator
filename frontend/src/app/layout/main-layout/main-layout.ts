@@ -1,6 +1,6 @@
 // src/app/layout/main-layout/main-layout.ts
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -11,6 +11,7 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class MainLayout {
   authService = inject(AuthService);
+  router = inject(Router);
   sidebarOpen = signal(false);
 
   openSidebar() { this.sidebarOpen.set(true); }
