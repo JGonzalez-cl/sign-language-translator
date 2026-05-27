@@ -218,20 +218,18 @@ class ASLPredictor:
         return features
     
     def _classify(self, features: np.ndarray) -> tuple[str, float]:
-        """ 
-        Clasifica el vector de features con el modelo Random Forest
-        
-        Returns:
-            Tupla (gesto, confianza) con la clase predicha y su probabilidad
-        """
         features_2d = features.reshape(1, -1)
-        
+    
         gesture = self._model.predict(features_2d)[0]
-        
+    
         probabilities = self._model.predict_proba(features_2d)[0]
         class_index = list(self._model.classes_).index(gesture)
         confidence = float(probabilities[class_index])
-        
+
+        # AÑADIR ESTO:
+        if confidence < 0.55:
+            return (_NOTHING_GESTURE, confidence)
+
         return (gesture, confidence)
     
     @staticmethod

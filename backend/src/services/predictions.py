@@ -417,6 +417,7 @@ async def predict_live(websocket: WebSocket, db) -> None:
         "ultimo_gesto": None,
         "detalles_data": [],
         "frames_procesados": 0,
+        "secuencia_final": None,
     }
  
     # ── 4. BUCLE PRINCIPAL CON TIMEOUT ────────────────────────────────────────
@@ -462,7 +463,7 @@ async def predict_live(websocket: WebSocket, db) -> None:
         return
  
     detalles_data = state["detalles_data"]
-    secuencia_texto = "".join(d["gesto"] for d in detalles_data)
+    secuencia_texto = state["secuencia_final"] or "".join(d["gesto"] for d in detalles_data)
     confianza_media = (
         sum(d["confianza"] for d in detalles_data) / len(detalles_data)
         if detalles_data else 0.0
@@ -496,8 +497,11 @@ async def _live_loop(websocket: WebSocket, predictor, state: dict) -> None:
         WebSocketDisconnect  si el cliente se desconecta
     """
     async for message in websocket.iter_json():
+        if message.get("type") == "stop":
+            state["secuencia_final"] = message.get("secuencia", "")
+            raise _StopGestureSignal()
         if message.get("type") != "frame":
-            continue  # ignorar mensajes de control desconocidos
+            continue
  
         frame = _decode_frame(message.get("data", ""))
         if frame is None:
@@ -511,8 +515,8 @@ async def _live_loop(websocket: WebSocket, predictor, state: dict) -> None:
  
         # ML — is_stop_gesture primero para no inferir gesto en el frame de parada
         try:
-            if predictor.is_stop_gesture(frame):
-                raise _StopGestureSignal()
+            # if predictor.is_stop_gesture(frame):
+                # raise _StopGestureSignal()
             gesto, confianza = predictor.predict(frame)
         except (_StopGestureSignal, _MLErrorSignal):
             raise

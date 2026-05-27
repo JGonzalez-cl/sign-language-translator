@@ -93,4 +93,21 @@ export class HistoryDetail implements OnInit {
   getModoLabel(modo: string): string {
     return this.MODO_LABELS[modo] ?? modo;
   }
+
+  getSecuenciaLimpia(texto: string): string {
+    console.log('secuencia raw:', texto);
+    const tokens = texto.match(/del|space|[A-Z]/g) ?? [];
+    console.log('tokens:', tokens);
+    const resultado: string[] = [];
+    for (const token of tokens) {
+      if (token === 'del') {
+        resultado.pop();
+      } else if (token === 'space') {
+        resultado.push(' ');
+      } else {
+        resultado.push(token);
+      }
+    }
+    return resultado.join('');
+  }
 }

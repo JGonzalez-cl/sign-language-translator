@@ -23,9 +23,15 @@ export class Live implements OnDestroy {
   errorMessage = signal('');
   secuencia = signal('');
   ultimoGesto = signal('');
+  ultimoGestoReal = signal('');
   ultimaConfianza = signal(0);
   sessionId = signal<number | null>(null);
 
+  private sessionStartTime = 0;
+  private timeoutWarning: any = null;
+  readonly SESSION_MAX = 180000; // 3 minutos en ms
+  private ultimoGestoTimestamp = 0;
+  readonly REPEAT_DELAY = 2000; // 2 segundos
   private stream: MediaStream | null = null;
   private ws: WebSocket | null = null;
   private frameInterval: any = null;
@@ -63,12 +69,31 @@ export class Live implements OnDestroy {
       if (msg.type === 'auth_ok') {
         this.sessionId.set(msg.sesion_id);
         this.state.set('connected');
+        this.sessionStartTime = Date.now();
+        this.timeoutWarning = setTimeout(() => {
+          this.stopSession();
+        }, this.SESSION_MAX - 1000); // 1 segundo antes del timeout del backend
         // Esperar a que Angular renderice el <video> tras cambiar el estado
         this.waitForVideoAndAssign();
       } else if (msg.type === 'prediction') {
-        this.ultimoGesto.set(msg.gesto);
-        this.ultimaConfianza.set(msg.confianza);
-        this.secuencia.set(msg.secuencia);
+          const gestoPrevio = this.ultimoGestoReal();
+          this.ultimoGesto.set(msg.gesto);
+          this.ultimaConfianza.set(msg.confianza);
+
+          if (msg.gesto === 'del' && gestoPrevio !== 'del') {
+            this.secuencia.set(this.secuencia().slice(0, -1));
+            this.ultimoGestoReal.set('');
+          } else if (msg.gesto === 'space' && gestoPrevio !== 'space') {
+            this.secuencia.set(this.secuencia() + ' ');
+            this.ultimoGestoReal.set('space');
+          } else if (msg.gesto !== 'nothing') {
+            const ahora = Date.now();
+            if (msg.gesto !== gestoPrevio || ahora - this.ultimoGestoTimestamp >= this.REPEAT_DELAY) {
+              this.secuencia.set(this.secuencia() + msg.gesto);
+            }
+            this.ultimoGestoReal.set(msg.gesto);
+            this.ultimoGestoTimestamp = ahora;
+          }
       } else if (msg.type === 'error') {
         console.warn('WS error:', msg.detail);
       }
@@ -107,6 +132,9 @@ export class Live implements OnDestroy {
   }
 
   stopSession() {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ type: 'stop', secuencia: this.secuencia() }));
+    }
     this.ws?.close();
   }
 
@@ -139,6 +167,8 @@ export class Live implements OnDestroy {
   stopSendingFrames() {
     clearInterval(this.frameInterval);
     this.frameInterval = null;
+    clearTimeout(this.timeoutWarning);
+    this.timeoutWarning = null;
   }
 
   stopCamera() {

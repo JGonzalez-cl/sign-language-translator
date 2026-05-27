@@ -71,7 +71,9 @@
           @if (item()!.resultado!.secuencia_texto) {
             <div class="text-center py-6 mb-4 bg-blue-50 rounded-xl">
               <span class="text-5xl font-bold text-blue-600 tracking-widest break-all">
-                {{ item()!.resultado!.secuencia_texto }}
+                {{ item()!.sesion.modo === 'LIVE_SESSION' 
+                  ? item()!.resultado!.secuencia_texto 
+                  : getSecuenciaLimpia(item()!.resultado!.secuencia_texto) }}
               </span>
             </div>
           } @else {
