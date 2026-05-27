@@ -119,6 +119,22 @@ export class AuthService {
     });
   }
 
+  loadProfileForInit(): Promise<void> {
+    return new Promise(resolve => {
+      this.http.get<UserProfile>(`${environment.apiUrl}/users/me`).subscribe({
+        next: user => {
+          this._currentUser.set(user);
+          resolve();
+        },
+        error: () => {
+          localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+          localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+          resolve();
+        },
+      });
+    });
+  }
+
   // ── Tokens ───────────────────────────────────────────────────────────────────
 
   getAccessToken(): string | null {
@@ -141,9 +157,6 @@ export class AuthService {
   }
 
   private restoreSession(): void {
-    const token = this.getAccessToken();
-    if (token) {
-      this.loadProfile();
-    }
+    
   }
 }
