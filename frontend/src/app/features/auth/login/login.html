@@ -12,9 +12,9 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
 
       <!-- Error global -->
-      @if (errorMessage) {
+      @if (errorMessage()) {
         <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-          {{ errorMessage }}
+          {{ errorMessage() }}
         </div>
       }
 
@@ -67,12 +67,12 @@
         <!-- Botón -->
         <button
           type="submit"
-          [disabled]="loading"
+          [disabled]="loading()"
           class="w-full py-2.5 px-4 rounded-lg text-sm font-medium text-white
                  bg-blue-600 hover:bg-blue-700 active:bg-blue-800
                  disabled:opacity-60 disabled:cursor-not-allowed transition"
         >
-          @if (loading) {
+          @if (loading()) {
             <span>Cargando...</span>
           } @else {
             <span>Iniciar sesión</span>

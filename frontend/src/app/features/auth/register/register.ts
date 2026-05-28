@@ -1,5 +1,5 @@
 // src/app/features/auth/register/register.ts
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -23,8 +23,8 @@ export class Register {
     password: ['', [Validators.required, Validators.minLength(8)]],
   });
 
-  loading = false;
-  errorMessage = '';
+  loading = signal(false);
+  errorMessage = signal('');
 
   get email() { return this.form.get('email')!; }
   get nombre_usuario() { return this.form.get('nombre_usuario')!; }
@@ -38,14 +38,14 @@ export class Register {
       return;
     }
 
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
     this.authService.register(this.form.value).subscribe({
       next: () => this.router.navigate(['/translator']),
       error: (err) => {
-        this.loading = false;
-        this.errorMessage = err.error?.detail ?? 'Error al registrarse. Inténtalo de nuevo.';
+        this.loading.set(false);
+        this.errorMessage.set(err.error?.detail ?? 'Error al registrarse. Inténtalo de nuevo.');
       },
     });
   }
