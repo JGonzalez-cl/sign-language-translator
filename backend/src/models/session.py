@@ -37,7 +37,7 @@ class SesionTraduccion(Base):
         DateTime(timezone=True), nullable=True
     )
     eliminado_por_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("usuario.id"), nullable=True
+        Integer, ForeignKey("usuario.id", ondelete="SET NULL"), nullable=True
     )
     
     status: Mapped[SesionStatus] = mapped_column(
