@@ -17,3 +17,11 @@ class LogoutRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+class AdminRegisterRequest(BaseModel):
+    email: EmailStr
+    password: str
+    nombre_usuario: str
+    nombre: str
+    apellidos: str
+    admin_secret: str

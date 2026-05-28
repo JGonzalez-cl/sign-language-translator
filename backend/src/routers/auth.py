@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.db import get_db
 from src.dependencies.auth import get_current_user
 from src.models.user import Usuario
-from src.schemas.token import LoginRequest, LogoutRequest, RefreshRequest, TokenResponse
+from src.schemas.token import LoginRequest, LogoutRequest, RefreshRequest, TokenResponse, AdminRegisterRequest
 from src.schemas.user import UsuarioCreate, UsuarioResponse
 from src.services.auth import AuthService
 
@@ -77,3 +77,21 @@ async def refresh(
 ):
     service = AuthService(db)
     return await service.refresh(refresh_token=data.refresh_token)
+
+@router.post("/register-admin", response_model=TokenResponse, status_code=201)
+async def register_admin(
+    data: AdminRegisterRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    service = AuthService(db)
+    return await service.register(
+        email=data.email,
+        password=data.password,
+        nombre_usuario=data.nombre_usuario,
+        nombre=data.nombre,
+        apellidos=data.apellidos,
+        rol_nombre="admin",
+        admin_secret=data.admin_secret,
+        request=request,
+    )

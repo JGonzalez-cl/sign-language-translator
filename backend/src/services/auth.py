@@ -31,7 +31,16 @@ class AuthService:
         self.user_repo = UserRepository(db)
 
     async def register(self, email: str, password: str, nombre_usuario: str,
-                       nombre: str, apellidos: str, request: Request) -> TokenResponse:
+                   nombre: str, apellidos: str, request: Request,
+                   rol_nombre: str = "user", admin_secret: str | None = None) -> TokenResponse:
+
+        if rol_nombre == "admin":
+            if admin_secret != settings.ADMIN_SECRET:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Secret de administrador incorrecto",
+                )
+
         if await self.user_repo.get_by_email(email):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -44,11 +53,11 @@ class AuthService:
                 detail="El nombre de usuario ya está en uso",
             )
 
-        rol = await self.user_repo.get_rol_by_nombre("user")
+        rol = await self.user_repo.get_rol_by_nombre(rol_nombre)
         if not rol:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Error interno: rol por defecto no encontrado",
+                detail="Error interno: rol no encontrado",
             )
 
         usuario = await self.user_repo.create(
@@ -61,7 +70,6 @@ class AuthService:
         )
 
         tokens = await self._create_tokens(usuario.id, request)
-
         await self._log(usuario.id, "registro", request)
         await self.db.commit()
 
