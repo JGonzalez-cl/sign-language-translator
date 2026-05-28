@@ -1,0 +1,155 @@
+<div class="max-w-2xl mx-auto">
+
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">Mi perfil</h2>
+    <p class="mt-1 text-gray-500 text-sm">Gestiona tu cuenta y preferencias.</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1 w-fit">
+    @for (t of [['info','Información'],['password','Contraseña'],['danger','Cuenta']] ; track t[0]) {
+      <button
+        (click)="setTab(t[0])"
+        class="px-4 py-2 rounded-lg text-sm font-medium transition"
+        [class.bg-white]="tab() === t[0]"
+        [class.text-gray-900]="tab() === t[0]"
+        [class.shadow-sm]="tab() === t[0]"
+        [class.text-gray-500]="tab() !== t[0]"
+      >{{ t[1] }}</button>
+    }
+  </div>
+
+  <!-- Info -->
+  @if (tab() === 'info') {
+    <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+
+      @if (infoSuccess()) {
+        <div class="p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm">{{ infoSuccess() }}</div>
+      }
+      @if (infoError()) {
+        <div class="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{{ infoError() }}</div>
+      }
+
+      <div class="grid grid-cols-1 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Nombre</label>
+          @if (editMode()) {
+            <input [(ngModel)]="nombre" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+          } @else {
+            <p class="text-sm text-gray-900">{{ user()?.nombre }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Apellidos</label>
+          @if (editMode()) {
+            <input [ngModel]="apellidos()" (ngModelChange)="apellidos.set($event)"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+          } @else {
+            <p class="text-sm text-gray-900">{{ user()?.apellidos }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Nombre de usuario</label>
+          @if (editMode()) {
+            <input [ngModel]="nombreUsuario()" (ngModelChange)="nombreUsuario.set($event)"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+          } @else {
+            <p class="text-sm text-gray-900">{{ user()?.nombre_usuario }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Email</label>
+          <p class="text-sm text-gray-900">{{ user()?.email }}</p>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Miembro desde</label>
+          <p class="text-sm text-gray-900">{{ user()?.fecha_registro | date:'dd/MM/yyyy' }}</p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        @if (editMode()) {
+          <button (click)="saveInfo()" [disabled]="savingInfo()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition">
+            {{ savingInfo() ? 'Guardando...' : 'Guardar' }}
+          </button>
+          <button (click)="editMode.set(false)"
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition">
+            Cancelar
+          </button>
+        } @else {
+          <button (click)="editMode.set(true)"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+            Editar
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Contraseña -->
+  @if (tab() === 'password') {
+    <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+
+      @if (passwordSuccess()) {
+        <div class="p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm">{{ passwordSuccess() }}</div>
+      }
+      @if (passwordError()) {
+        <div class="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{{ passwordError() }}</div>
+      }
+
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Contraseña actual</label>
+        <input type="password" [ngModel]="currentPassword()" (ngModelChange)="currentPassword.set($event)"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Nueva contraseña</label>
+        <input type="password" [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Confirmar nueva contraseña</label>
+        <input type="password" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      </div>
+
+      <button (click)="savePassword()" [disabled]="savingPassword()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition">
+        {{ savingPassword() ? 'Guardando...' : 'Cambiar contraseña' }}
+      </button>
+    </div>
+  }
+
+  <!-- Danger zone -->
+  @if (tab() === 'danger') {
+    <div class="bg-white border border-red-200 rounded-xl p-6">
+      <h3 class="font-semibold text-red-600 mb-2">Eliminar cuenta</h3>
+      <p class="text-sm text-gray-500 mb-4">Esta acción es irreversible. Se eliminarán todos tus datos.</p>
+
+      @if (deleteError()) {
+        <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{{ deleteError() }}</div>
+      }
+
+      @if (!showDeleteConfirm()) {
+        <button (click)="showDeleteConfirm.set(true)"
+          class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition">
+          Eliminar mi cuenta
+        </button>
+      } @else {
+        <div class="flex gap-3">
+          <button (click)="cancelDelete()" [disabled]="deleting()"
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition">
+            Cancelar
+          </button>
+          <button (click)="deleteAccount()" [disabled]="deleting()"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-60 transition">
+            {{ deleting() ? 'Eliminando...' : 'Confirmar eliminación' }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+</div>
