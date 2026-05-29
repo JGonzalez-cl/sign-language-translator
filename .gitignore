@@ -14,7 +14,7 @@ ml/data/processed/
 ml/notebooks/.ipynb_checkpoints/
 
 *.log
-logs/
+/logs/
 tmp/
 temp/
 
