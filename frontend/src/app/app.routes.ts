@@ -24,7 +24,7 @@ export const routes: Routes = [
       {
         path: 'translator',
         children: [
-          { path: '', redirectTo: 'image', pathMatch: 'full' },
+          { path: '', redirectTo: 'live', pathMatch: 'full' },
           {
             path: 'image',
             loadComponent: () => import('./features/translator/image/image').then(m => m.Image),
