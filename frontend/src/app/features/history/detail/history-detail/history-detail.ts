@@ -3,10 +3,11 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { PredictionsService, PrediccionResponse } from '../../../../core/services/predictions.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-history-detail',
-  imports: [DatePipe],
+  imports: [DatePipe, FormsModule],
   templateUrl: './history-detail.html',
   styleUrl: './history-detail.scss',
 })
@@ -21,6 +22,48 @@ export class HistoryDetail implements OnInit {
   signedUrl = signal<string | null>(null);
   deleting = signal(false);
   showDeleteConfirm = signal(false);
+  editingNombre = signal(false);
+  nombreEdit = signal('');
+  savingNombre = signal(false);
+
+  getSessionTitle(): string {
+    const item = this.item();
+    if (!item) return '';
+    return item.sesion.nombre ?? `Sesión live #${item.sesion.id}`;
+  }
+
+  startEditNombre() {
+    this.nombreEdit.set(this.getSessionTitle());
+    this.editingNombre.set(true);
+  }
+
+  saveNombre() {
+    const id = this.item()?.sesion.id;
+    if (!id) return;
+
+    this.savingNombre.set(true);
+    this.predictionsService.updateNombre(id, this.nombreEdit()).subscribe({
+      next: () => {
+        const item = this.item();
+        if (item) {
+          this.item.set({
+            ...item,
+            sesion: { ...item.sesion, nombre: this.nombreEdit() }
+          });
+        }
+        this.editingNombre.set(false);
+        this.savingNombre.set(false);
+      },
+      error: () => {
+        this.editingNombre.set(false);
+        this.savingNombre.set(false);
+      },
+    });
+  }
+
+cancelEditNombre() {
+  this.editingNombre.set(false);
+}
 
   readonly MODO_LABELS: Record<string, string> = {
     IMAGEN_SUBIDA: 'Imagen subida',
