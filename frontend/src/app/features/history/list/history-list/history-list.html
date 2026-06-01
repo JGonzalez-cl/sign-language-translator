@@ -1,117 +1,128 @@
-<!-- src/app/features/history/list/history-list/history-list.html -->
-<div class="max-w-4xl mx-auto">
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-4xl mx-auto px-6 py-10">
 
-  <!-- Título -->
-  <div class="mb-6">
-    <h2 class="text-2xl font-bold text-gray-900">Historial</h2>
-    <p class="mt-1 text-gray-500 text-sm">Todas tus sesiones de traducción.</p>
-  </div>
-
-  <!-- Loading -->
-  @if (loading()) {
-    <div class="flex items-center gap-3 text-gray-500 py-12 justify-center">
-      <div class="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      <span class="text-sm">Cargando historial...</span>
+    <!-- Cabecera -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-gray-900">Historial</h2>
+      <p class="mt-1 text-gray-500 text-sm">Todas tus sesiones de traducción.</p>
     </div>
-  }
 
-  <!-- Error -->
-  @if (error()) {
-    <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-      {{ error() }}
-    </div>
-  }
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="flex items-center gap-3 text-gray-500 py-12 justify-center">
+        <div class="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-sm">Cargando historial...</span>
+      </div>
+    }
 
-  <!-- Lista vacía -->
-  @if (!loading() && !error() && items().length === 0) {
-    <div class="text-center py-16 border-2 border-dashed border-gray-300 rounded-xl">
-      <p class="text-gray-500 font-medium">No tienes sesiones todavía.</p>
-      <p class="text-gray-400 text-sm mt-1">Empieza traduciendo un gesto en el Traductor.</p>
-    </div>
-  }
+    <!-- Error -->
+    @if (error()) {
+      <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
+        {{ error() }}
+      </div>
+    }
 
-  <!-- Lista -->
-  @if (!loading() && items().length > 0) {
-    <div class="space-y-3">
-      @for (item of items(); track item.sesion.id) {
-        <div
-          (click)="goToDetail(item.sesion.id)"
-          class="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer
-                 hover:border-blue-300 hover:shadow-sm transition flex items-center gap-4"
-        >
-          <!-- Modo icono -->
-          <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-            @if (item.sesion.modo === 'IMAGEN_SUBIDA' || item.sesion.modo === 'FOTO_CAPTURADA') {
-              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01"/>
-              </svg>
-            } @else {
-              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
-              </svg>
-            }
-          </div>
-
-          <!-- Info -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="text-sm font-medium text-gray-900">{{ getModoLabel(item.sesion.modo) }}</span>
-              <span
-                class="text-xs px-2 py-0.5 rounded-full"
-                [class.bg-green-100]="item.sesion.status === 'COMPLETADA'"
-                [class.text-green-700]="item.sesion.status === 'COMPLETADA'"
-                [class.bg-red-100]="item.sesion.status === 'INTERRUMPIDA'"
-                [class.text-red-700]="item.sesion.status === 'INTERRUMPIDA'"
-              >
-                {{ getStatusLabel(item.sesion.status) }}
-              </span>
-            </div>
-
-            @if (item.resultado?.secuencia_texto) {
-              <p class="text-lg font-bold text-blue-600 truncate tracking-widest">
-                {{ item.resultado!.secuencia_texto }}
-              </p>
-            } @else {
-              <p class="text-sm text-gray-400">Sin gestos detectados</p>
-            }
-          </div>
-
-          <!-- Fecha -->
-          <div class="text-right flex-shrink-0">
-            <p class="text-xs text-gray-400">{{ item.sesion.fecha | date:'dd/MM/yyyy' }}</p>
-            <p class="text-xs text-gray-400">{{ item.sesion.fecha | date:'HH:mm' }}</p>
-          </div>
-
-          <!-- Flecha -->
-          <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    <!-- Lista vacía -->
+    @if (!loading() && !error() && items().length === 0) {
+      <div class="text-center py-20 bg-white border border-gray-200 rounded-2xl">
+        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
           </svg>
         </div>
-      }
-    </div>
+        <p class="text-gray-700 font-semibold text-lg">Sin sesiones todavía</p>
+        <p class="text-gray-400 text-sm mt-1">Empieza traduciendo un gesto en el Traductor.</p>
+      </div>
+    }
 
-    <!-- Paginación -->
-    <div class="flex items-center justify-between mt-6">
-      <button
-        (click)="prevPage()"
-        [disabled]="page() === 1"
-        class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700
-               hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition"
-      >
-        Anterior
-      </button>
-      <span class="text-sm text-gray-500">Página {{ page() }}</span>
-      <button
-        (click)="nextPage()"
-        [disabled]="!hasMore()"
-        class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700
-               hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition"
-      >
-        Siguiente
-      </button>
-    </div>
-  }
+    <!-- Lista -->
+    @if (!loading() && items().length > 0) {
+      <div class="space-y-3">
+        @for (item of items(); track item.sesion.id) {
+          <div
+            (click)="goToDetail(item.sesion.id)"
+            class="bg-white border border-gray-200 rounded-2xl p-5 cursor-pointer
+                   hover:border-blue-300 hover:shadow-md transition-all flex items-center gap-4"
+          >
+            <!-- Icono -->
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                 [class.bg-blue-50]="item.sesion.modo !== 'LIVE_SESSION'"
+                 [class.bg-indigo-50]="item.sesion.modo === 'LIVE_SESSION'">
+              @if (item.sesion.modo === 'IMAGEN_SUBIDA' || item.sesion.modo === 'FOTO_CAPTURADA') {
+                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01"/>
+                </svg>
+              } @else if (item.sesion.modo === 'LIVE_SESSION') {
+                <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+                </svg>
+              } @else {
+                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+                </svg>
+              }
+            </div>
 
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-semibold text-gray-900">
+                  {{ item.sesion.nombre ?? (item.sesion.modo === 'LIVE_SESSION' ? 'Sesión live #' + item.sesion.id : getModoLabel(item.sesion.modo)) }}
+                </span>
+                <span
+                  class="text-xs px-2 py-0.5 rounded-full font-medium"
+                  [class.bg-green-100]="item.sesion.status === 'COMPLETADA'"
+                  [class.text-green-700]="item.sesion.status === 'COMPLETADA'"
+                  [class.bg-red-100]="item.sesion.status === 'INTERRUMPIDA'"
+                  [class.text-red-700]="item.sesion.status === 'INTERRUMPIDA'"
+                >
+                  {{ getStatusLabel(item.sesion.status) }}
+                </span>
+              </div>
+              <p class="text-xs text-gray-400">
+                {{ item.resultado?.secuencia_texto ? 'Con resultado' : 'Sin gestos detectados' }}
+              </p>
+            </div>
+
+            <!-- Fecha -->
+            <div class="text-right flex-shrink-0">
+              <p class="text-xs font-medium text-gray-500">{{ item.sesion.fecha | date:'dd/MM/yyyy' }}</p>
+              <p class="text-xs text-gray-400">{{ item.sesion.fecha | date:'HH:mm' }}</p>
+            </div>
+
+            <!-- Flecha -->
+            <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        }
+      </div>
+
+      <!-- Paginación -->
+      <div class="flex items-center justify-between mt-8">
+        <button
+          (click)="prevPage()"
+          [disabled]="page() === 1"
+          class="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-gray-200 text-gray-600
+                 hover:border-blue-300 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition"
+        >
+          Anterior
+        </button>
+        <span class="text-sm text-gray-400">Página {{ page() }}</span>
+        <button
+          (click)="nextPage()"
+          [disabled]="!hasMore()"
+          class="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-gray-200 text-gray-600
+                 hover:border-blue-300 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition"
+        >
+          Siguiente
+        </button>
+      </div>
+    }
+
+  </div>
 </div>
