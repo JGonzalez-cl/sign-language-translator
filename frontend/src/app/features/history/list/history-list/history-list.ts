@@ -1,12 +1,12 @@
 // src/app/features/history/list/history-list/history-list.ts
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { NgClass, DatePipe, SlicePipe } from '@angular/common';
 import { PredictionsService, PrediccionResponse } from '../../../../core/services/predictions.service';
 
 @Component({
   selector: 'app-history-list',
-  imports: [DatePipe],
+  imports: [NgClass, DatePipe, SlicePipe],
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
 })

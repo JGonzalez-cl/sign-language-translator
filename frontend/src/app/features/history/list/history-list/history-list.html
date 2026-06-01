@@ -1,101 +1,173 @@
 <div class="min-h-screen bg-gray-50">
-  <div class="max-w-4xl mx-auto px-6 py-10">
 
-    <!-- Cabecera -->
-    <div class="mb-8">
-      <h2 class="text-3xl font-bold text-gray-900">Historial</h2>
-      <p class="mt-1 text-gray-500 text-sm">Todas tus sesiones de traducción.</p>
+  <!-- Hero header — mismo lenguaje visual que el login -->
+  <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 relative overflow-hidden">
+
+    <!-- Círculos decorativos (idénticos al login) -->
+    <div class="absolute top-[-60px] left-[-60px] w-72 h-72 bg-white opacity-5 rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-[-40px] right-[-40px] w-80 h-80 bg-white opacity-5 rounded-full pointer-events-none"></div>
+    <div class="absolute top-1/2 left-1/2 w-40 h-40 bg-white opacity-5 rounded-full pointer-events-none"></div>
+
+    <div class="max-w-4xl mx-auto px-6 py-10 relative">
+      <div class="flex items-end justify-between gap-4">
+
+        <!-- Título -->
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <span class="text-blue-200 text-sm font-medium">Sesiones guardadas</span>
+          </div>
+          <h2 class="text-3xl font-bold text-white">Historial</h2>
+          <p class="mt-1 text-blue-200 text-sm">Todas tus sesiones de traducción.</p>
+        </div>
+
+        <!-- Stats rápidas -->
+        @if (!loading() && items().length > 0) {
+          <div class="hidden sm:flex items-center gap-3 flex-shrink-0">
+            <div class="bg-white bg-opacity-10 rounded-xl px-4 py-2 text-center">
+              <p class="text-white text-lg font-bold">{{ items().length }}</p>
+              <p class="text-blue-200 text-xs">esta página</p>
+            </div>
+            <div class="bg-white bg-opacity-10 rounded-xl px-4 py-2 text-center">
+              <p class="text-white text-lg font-bold">{{ page() }}</p>
+              <p class="text-blue-200 text-xs">página actual</p>
+            </div>
+          </div>
+        }
+      </div>
     </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="max-w-4xl mx-auto px-6 py-8">
 
     <!-- Loading -->
     @if (loading()) {
-      <div class="flex items-center gap-3 text-gray-500 py-12 justify-center">
-        <div class="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <div class="flex items-center gap-3 text-gray-400 py-16 justify-center">
+        <div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         <span class="text-sm">Cargando historial...</span>
       </div>
     }
 
     <!-- Error -->
     @if (error()) {
-      <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
+      <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
         {{ error() }}
       </div>
     }
 
     <!-- Lista vacía -->
     @if (!loading() && !error() && items().length === 0) {
-      <div class="text-center py-20 bg-white border border-gray-200 rounded-2xl">
-        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="text-center py-20">
+        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                  d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+                  d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
           </svg>
         </div>
-        <p class="text-gray-700 font-semibold text-lg">Sin sesiones todavía</p>
+        <p class="text-gray-700 font-semibold">Sin sesiones todavía</p>
         <p class="text-gray-400 text-sm mt-1">Empieza traduciendo un gesto en el Traductor.</p>
       </div>
     }
 
     <!-- Lista -->
     @if (!loading() && items().length > 0) {
-      <div class="space-y-3">
+      <div class="space-y-2">
         @for (item of items(); track item.sesion.id) {
           <div
             (click)="goToDetail(item.sesion.id)"
-            class="bg-white border border-gray-200 rounded-2xl p-5 cursor-pointer
-                   hover:border-blue-300 hover:shadow-md transition-all flex items-center gap-4"
+            class="group bg-white border border-gray-200 rounded-2xl px-5 py-4 cursor-pointer
+                   hover:border-blue-300 hover:shadow-sm transition-all duration-150 flex items-center gap-4"
           >
-            <!-- Icono -->
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                 [class.bg-blue-50]="item.sesion.modo !== 'LIVE_SESSION'"
-                 [class.bg-indigo-50]="item.sesion.modo === 'LIVE_SESSION'">
+            <!-- Icono de modo -->
+            <div
+              class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              [ngClass]="{
+                'bg-indigo-50': item.sesion.modo === 'LIVE_SESSION',
+                'bg-blue-50':   item.sesion.modo === 'IMAGEN_SUBIDA' || item.sesion.modo === 'FOTO_CAPTURADA',
+                'bg-sky-50':    item.sesion.modo === 'VIDEO_SUBIDO'  || item.sesion.modo === 'VIDEO_GRABADO'
+              }"
+            >
+              <!-- Imagen -->
               @if (item.sesion.modo === 'IMAGEN_SUBIDA' || item.sesion.modo === 'FOTO_CAPTURADA') {
-                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01"/>
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-              } @else if (item.sesion.modo === 'LIVE_SESSION') {
-                <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              }
+              <!-- Vídeo -->
+              @else if (item.sesion.modo === 'VIDEO_SUBIDO' || item.sesion.modo === 'VIDEO_GRABADO') {
+                <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
                         d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
                 </svg>
-              } @else {
-                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+              }
+              <!-- Live -->
+              @else {
+                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="3" stroke-width="1.75"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                        d="M6.343 6.343a8 8 0 000 11.314M17.657 6.343a8 8 0 010 11.314"/>
                 </svg>
               }
             </div>
 
-            <!-- Info -->
+            <!-- Info principal -->
             <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-sm font-semibold text-gray-900">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm font-semibold text-gray-900 truncate">
                   {{ item.sesion.nombre ?? (item.sesion.modo === 'LIVE_SESSION' ? 'Sesión live #' + item.sesion.id : getModoLabel(item.sesion.modo)) }}
                 </span>
+
+                <!-- Badge status con dot -->
                 <span
-                  class="text-xs px-2 py-0.5 rounded-full font-medium"
-                  [class.bg-green-100]="item.sesion.status === 'COMPLETADA'"
-                  [class.text-green-700]="item.sesion.status === 'COMPLETADA'"
-                  [class.bg-red-100]="item.sesion.status === 'INTERRUMPIDA'"
-                  [class.text-red-700]="item.sesion.status === 'INTERRUMPIDA'"
+                  class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0"
+                  [ngClass]="{
+                    'bg-green-50 text-green-700':  item.sesion.status === 'COMPLETADA',
+                    'bg-red-50 text-red-600':       item.sesion.status === 'INTERRUMPIDA'
+                  }"
                 >
+                  <span
+                    class="w-1.5 h-1.5 rounded-full"
+                    [ngClass]="{
+                      'bg-green-500': item.sesion.status === 'COMPLETADA',
+                      'bg-red-400':   item.sesion.status === 'INTERRUMPIDA'
+                    }"
+                  ></span>
                   {{ getStatusLabel(item.sesion.status) }}
                 </span>
               </div>
-              <p class="text-xs text-gray-400">
-                {{ item.resultado?.secuencia_texto ? 'Con resultado' : 'Sin gestos detectados' }}
+
+              <!-- Resultado o subtítulo -->
+              <p class="text-xs text-gray-400 mt-0.5 truncate">
+                @if (item.resultado?.secuencia_texto) {
+                  <span class="font-mono tracking-wide">{{ item.resultado!.secuencia_texto | slice:0:40 }}{{ (item.resultado!.secuencia_texto.length > 40) ? '…' : '' }}</span>
+                } @else {
+                  Sin gestos detectados
+                }
               </p>
             </div>
 
-            <!-- Fecha -->
-            <div class="text-right flex-shrink-0">
+            <!-- Fecha + hora -->
+            <div class="text-right flex-shrink-0 hidden sm:block">
               <p class="text-xs font-medium text-gray-500">{{ item.sesion.fecha | date:'dd/MM/yyyy' }}</p>
               <p class="text-xs text-gray-400">{{ item.sesion.fecha | date:'HH:mm' }}</p>
             </div>
 
             <!-- Flecha -->
-            <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              class="w-4 h-4 text-gray-300 flex-shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-400"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
           </div>
@@ -103,23 +175,31 @@
       </div>
 
       <!-- Paginación -->
-      <div class="flex items-center justify-between mt-8">
+      <div class="flex items-center justify-between mt-8 gap-4">
         <button
           (click)="prevPage()"
           [disabled]="page() === 1"
-          class="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-gray-200 text-gray-600
+          class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-white border border-gray-200 text-gray-600
                  hover:border-blue-300 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition"
         >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
           Anterior
         </button>
-        <span class="text-sm text-gray-400">Página {{ page() }}</span>
+
+        <span class="text-sm text-gray-400">Página <span class="font-medium text-gray-600">{{ page() }}</span></span>
+
         <button
           (click)="nextPage()"
           [disabled]="!hasMore()"
-          class="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-gray-200 text-gray-600
+          class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-white border border-gray-200 text-gray-600
                  hover:border-blue-300 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition"
         >
           Siguiente
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
         </button>
       </div>
     }
