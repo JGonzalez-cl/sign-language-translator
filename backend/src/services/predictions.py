@@ -321,6 +321,20 @@ class PredictionsService:
 
         return {"message": "Sesión eliminada correctamente."}
     
+    async def update_nombre(self, sesion_id: int, nombre: str) -> dict:
+        sesion = await self.session_repo.get_by_id(sesion_id)
+
+        if not sesion or sesion.eliminado:
+            raise HTTPException(status_code=404, detail="Sesión no encontrada.")
+
+        if sesion.usuario_id != self.usuario.id:
+            raise HTTPException(status_code=403, detail="Sin acceso a esta sesión.")
+
+        await self.session_repo.update_sesion(sesion, nombre=nombre)
+        await self.db.commit()
+
+        return {"nombre": nombre}
+    
     @staticmethod
     def _decodificar_imagen(contenido: bytes) -> np.ndarray:
         arr = np.frombuffer(contenido, dtype=np.uint8)

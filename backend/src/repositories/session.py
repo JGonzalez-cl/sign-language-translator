@@ -89,3 +89,9 @@ class SessionRepository:
         await self.db.flush()
         await self.db.refresh(archivo)
         return archivo
+    
+    async def update_sesion(self, sesion, **kwargs):
+        for key, value in kwargs.items():
+            setattr(sesion, key, value)
+        await self.db.flush()
+        return sesion

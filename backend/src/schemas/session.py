@@ -9,10 +9,13 @@ class SesionResponse(BaseModel):
     status: SesionStatus  # añadir
     fecha: datetime
     eliminado: bool
+    nombre: str | None = None
 
     model_config = {"from_attributes": True}
-
 
 class SesionDetalleResponse(SesionResponse):
     fecha_eliminacion: datetime | None
     eliminado_por_id: int | None
+    
+class NombreUpdate(BaseModel):
+    nombre: str

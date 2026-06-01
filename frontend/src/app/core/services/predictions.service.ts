@@ -11,6 +11,7 @@ export interface SesionResponse {
   status: string;
   fecha: string;
   eliminado: boolean;
+  nombre: string | null;
 }
 
 export interface DetalleResultadoResponse {
@@ -80,5 +81,12 @@ export class PredictionsService {
 
   delete(sesionId: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/predictions/${sesionId}`);
+  }
+
+  updateNombre(sesionId: number, nombre: string): Observable<{ nombre: string }> {
+    return this.http.post<{ nombre: string }>(
+      `${this.apiUrl}/predictions/nombre?sesion_id=${sesionId}`, 
+      { nombre }
+    );
   }
 }

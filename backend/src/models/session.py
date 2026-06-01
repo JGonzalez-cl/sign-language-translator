@@ -26,6 +26,9 @@ class SesionTraduccion(Base):
     usuario_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("usuario.id", ondelete="CASCADE"), nullable=False, index=True
     )
+    nombre: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
     modo: Mapped[ModoSesion] = mapped_column(
         Enum(ModoSesion, name="modosesion"), nullable=False
     )
