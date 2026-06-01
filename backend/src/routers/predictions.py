@@ -9,9 +9,11 @@ from src.models.user import Usuario
 from src.repositories.session import SessionRepository
 from src.services.predictions import PredictionsService, predict_live
 from src.services.storage import StorageService
+from src.schemas.session import NombreUpdate
 
 router = APIRouter()
 
+print(">>> router predictions cargado")
 
 @router.post("/image")
 async def predict_image(
@@ -84,6 +86,16 @@ async def get_signed_url(
     storage = StorageService()
     url = await storage.get_signed_url(sesion.archivo.ruta_storage)
     return {"url": url}
+
+@router.post("/nombre")
+async def update_nombre(
+    sesion_id: int,
+    data: NombreUpdate,
+    db: AsyncSession = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user),
+):
+    service = PredictionsService(db=db, usuario=usuario)
+    return await service.update_nombre(sesion_id, data.nombre)
 
 @router.get("/{sesion_id}")
 async def get_prediction_detail(

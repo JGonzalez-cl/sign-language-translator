@@ -107,6 +107,8 @@ app.add_middleware(
 # Routers
 app.include_router(auth.router,        prefix="/auth",        tags=["Auth"])
 app.include_router(users.router,       prefix="/users",       tags=["Users"])
+from src.routers import predictions as pred_module
+print("endpoints predictions:", [r.path for r in pred_module.router.routes])
 app.include_router(predictions.router, prefix="/predictions", tags=["Predictions"])
 app.include_router(admin.router,       prefix="/admin",       tags=["Admin"])
 
