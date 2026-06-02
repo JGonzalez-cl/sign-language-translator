@@ -130,30 +130,30 @@
 <div class="min-h-screen flex flex-col bg-gray-50">
 
   <!-- Navbar top -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-20">
+  <header class="bg-blue-700 sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-14">
 
         <!-- Logo -->
-        <span class="font-bold text-gray-900 text-lg">ASL Translator</span>
+        <span class="font-bold text-white text-lg">ASL Translator</span>
 
         <!-- Navegación principal -->
         <nav class="flex items-center gap-1">
           <a
             routerLink="/translator"
-            routerLinkActive="text-blue-600 bg-blue-50"
+            routerLinkActive="text-white bg-blue-600"
             [routerLinkActiveOptions]="{ exact: false }"
-            class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600
-                   hover:text-gray-900 hover:bg-gray-100 transition"
+            class="px-4 py-2 rounded-lg text-sm font-medium text-blue-100
+                    hover:text-white hover:bg-blue-600 transition"
           >
             Traductor
           </a>
           <a
             routerLink="/history"
-            routerLinkActive="text-blue-600 bg-blue-50"
+            routerLinkActive="text-white bg-blue-600"
             [routerLinkActiveOptions]="{ exact: false }"
-            class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600
-                   hover:text-gray-900 hover:bg-gray-100 transition"
+            class="px-4 py-2 rounded-lg text-sm font-medium text-blue-100
+                    hover:text-white hover:bg-blue-600 transition"
           >
             Historial
           </a>
@@ -161,18 +161,18 @@
           @if (router.url.includes('/translator')) {
             <div class="flex gap-1 ml-4 border-l border-gray-200 pl-4">
               <a routerLink="/translator/image"
-                routerLinkActive="text-blue-600 bg-blue-50"
-                class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition">
+                routerLinkActive="text-white bg-blue-600"
+                class="px-3 py-1.5 rounded-lg text-xs font-medium text-blue-200 hover:text-white hover:bg-blue-600 transition">
                 Imagen
               </a>
               <a routerLink="/translator/video"
-                routerLinkActive="text-blue-600 bg-blue-50"
-                class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition">
+                routerLinkActive="text-white bg-blue-600"
+                class="px-3 py-1.5 rounded-lg text-xs font-medium text-blue-200 hover:text-white hover:bg-blue-600 transition">
                 Vídeo
               </a>
               <a routerLink="/translator/live"
-                routerLinkActive="text-blue-600 bg-blue-50"
-                class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition">
+                routerLinkActive="text-white bg-blue-600"
+                class="px-3 py-1.5 rounded-lg text-xs font-medium text-blue-200 hover:text-white hover:bg-blue-600 transition">
                 Live
               </a>
             </div>
@@ -181,8 +181,8 @@
 
         <!-- Avatar — activa el sidebar -->
         <button
-          class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center
-                 text-blue-600 font-semibold text-sm hover:bg-blue-200 transition"
+          class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center
+                    text-white font-semibold text-sm hover:bg-opacity-30 transition"
           (mouseenter)="openSidebar()"
           (click)="openSidebar()"
         >
