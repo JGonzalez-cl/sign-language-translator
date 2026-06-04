@@ -475,27 +475,41 @@ async def predict_live(websocket: WebSocket, db) -> None:
         await session_repo.update_status(sesion, SesionStatus.INTERRUMPIDA)
         await db.commit()
         return
- 
-    detalles_data = state["detalles_data"]
-    secuencia_texto = state["secuencia_final"] or "".join(d["gesto"] for d in detalles_data)
+
+    secuencia_texto = state["secuencia_final"] if state["secuencia_final"] is not None \
+        else "".join(d["gesto"] for d in state["detalles_data"])
+
+    # Reconstruir detalles filtrando solo los gestos presentes en secuencia_final
+    if state["secuencia_final"] is not None:
+        letras_finales = list(state["secuencia_final"].replace(" ", ""))
+        detalles_data = []
+        gestos_disponibles = [d for d in state["detalles_data"] if d["gesto"] not in ("del", "space", "nothing")]
+        for i, letra in enumerate(letras_finales):
+            match = next((d for d in gestos_disponibles if d["gesto"] == letra), None)
+            if match:
+                gestos_disponibles.remove(match)
+                detalles_data.append({**match, "posicion_secuencia": i})
+    else:
+        detalles_data = state["detalles_data"]
+
     confianza_media = (
         sum(d["confianza"] for d in detalles_data) / len(detalles_data)
         if detalles_data else 0.0
     )
- 
+
     resultado = await result_repo.create_resultado(
         sesion_id=sesion.id,
         secuencia_texto=secuencia_texto,
         confianza_media=confianza_media,
         total_frames=state["frames_procesados"],
     )
- 
+
     if detalles_data:
         await result_repo.create_detalles(
             resultado_id=resultado.id,
             detalles=detalles_data,
         )
- 
+
     await db.commit()
 
 async def _live_loop(websocket: WebSocket, predictor, state: dict) -> None:
