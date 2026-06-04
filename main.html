@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASL — Capturador de fotos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; padding: 2rem; }
+  h1 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .stat { background: #fff; border-radius: 10px; border: 1px solid #e0e0d8; padding: 0.9rem 1rem; }
+  .stat-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .stat-value { font-size: 22px; font-weight: 600; }
+
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
+  select, button { font-size: 14px; padding: 7px 14px; border-radius: 8px; border: 1px solid #d0d0c8; background: #fff; color: #1a1a1a; cursor: pointer; }
+  button:disabled { opacity: 0.4; cursor: default; }
+  button:not(:disabled):hover { background: #f0f0ea; }
+  button.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  button.primary:not(:disabled):hover { background: #333; }
+
+  .slider-wrap { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #d0d0c8; border-radius: 8px; padding: 6px 12px; }
+  .slider-wrap label { font-size: 12px; color: #888; white-space: nowrap; }
+  input[type=range] { width: 80px; accent-color: #1a1a1a; }
+  .slider-val { font-size: 14px; font-weight: 600; min-width: 28px; text-align: right; }
+
+  #status-msg { font-size: 13px; color: #666; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  video { width: 100%; border-radius: 10px; border: 1px solid #e0e0d8; background: #e8e8e0; display: block; transform: scaleX(-1); }
+
+  .preview-panel { background: #fff; border-radius: 10px; border: 1px solid #e0e0d8; display: flex; flex-direction: column; overflow: hidden; }
+  .preview-header { font-size: 12px; color: #888; padding: 8px 12px; border-bottom: 1px solid #e8e8e0; }
+  .preview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px; overflow-y: auto; max-height: 300px; }
+  .preview-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; }
+
+  .progress-wrap { margin-top: 1rem; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 4px; }
+  .progress-track { height: 6px; background: #e8e8e0; border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: #1a1a1a; border-radius: 99px; transition: width 0.3s; }
+
+  canvas { display: none; }
+
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+    body { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>ASL — Capturador de fotos</h1>
+
+<div class="stats">
+  <div class="stat">
+    <div class="stat-label">Gesto actual</div>
+    <div class="stat-value" id="current-gesture">—</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Fotos capturadas</div>
+    <div class="stat-value" id="photo-count">0</div>
+  </div>
+</div>
+
+<div class="controls">
+  <select id="gesture-select">
+    <option value="">Selecciona gesto</option>
+    <optgroup label="Le cuesta mucho">
+      <option value="N">N</option>
+      <option value="Q">Q</option>
+      <option value="T">T</option>
+      <option value="X">X</option>
+      <option value="Y">Y</option>
+    </optgroup>
+    <optgroup label="Le cuesta más">
+      <option value="J">J</option>
+      <option value="K">K</option>
+    </optgroup>
+    <optgroup label="Le cuesta un poco">
+      <option value="E">E</option>
+      <option value="F">F</option>
+      <option value="G">G</option>
+      <option value="H">H</option>
+      <option value="L">L</option>
+      <option value="P">P</option>
+      <option value="S">S</option>
+      <option value="U">U</option>
+    </optgroup>
+  </select>
+
+  <div class="slider-wrap">
+    <label>Intervalo (s)</label>
+    <input type="range" id="interval-slider" min="0.2" max="5" value="0.5" step="0.1" />
+    <span class="slider-val" id="interval-out">0.5</span>
+  </div>
+
+  <div class="slider-wrap">
+    <label>Objetivo</label>
+    <input type="range" id="target-slider" min="50" max="500" value="200" step="50" />
+    <span class="slider-val" id="target-out">200</span>
+  </div>
+
+  <button class="primary" id="start-btn" disabled>▶ Iniciar</button>
+  <button id="stop-btn" disabled>⏸ Pausar</button>
+  <button id="download-btn" disabled>⬇ Descargar ZIP</button>
+  <span id="status-msg">Iniciando cámara...</span>
+</div>
+
+<div class="grid">
+  <div>
+    <video id="webcam" autoplay playsinline muted></video>
+    <canvas id="capture-canvas"></canvas>
+  </div>
+  <div class="preview-panel">
+    <div class="preview-header">Últimas capturas</div>
+    <div class="preview-grid" id="preview-grid"></div>
+  </div>
+</div>
+
+<div class="progress-wrap" id="progress-wrap" style="display:none;">
+  <div class="progress-meta">
+    <span id="progress-label">Progreso</span>
+    <span id="progress-pct">0%</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+</div>
+
+<script>
+const video = document.getElementById('webcam');
+const canvas = document.getElementById('capture-canvas');
+const ctx = canvas.getContext('2d');
+const gestureSelect = document.getElementById('gesture-select');
+const startBtn = document.getElementById('start-btn');
+const stopBtn = document.getElementById('stop-btn');
+const downloadBtn = document.getElementById('download-btn');
+const photoCountEl = document.getElementById('photo-count');
+const currentGestureEl = document.getElementById('current-gesture');
+const statusMsg = document.getElementById('status-msg');
+const previewGrid = document.getElementById('preview-grid');
+const progressWrap = document.getElementById('progress-wrap');
+const progressFill = document.getElementById('progress-fill');
+const progressPct = document.getElementById('progress-pct');
+const progressLabel = document.getElementById('progress-label');
+const intervalSlider = document.getElementById('interval-slider');
+const intervalOut = document.getElementById('interval-out');
+const targetSlider = document.getElementById('target-slider');
+const targetOut = document.getElementById('target-out');
+
+let capturing = false;
+let intervalId = null;
+let photos = {};
+
+intervalSlider.addEventListener('input', () => { intervalOut.textContent = parseFloat(intervalSlider.value).toFixed(1); });
+targetSlider.addEventListener('input', () => { targetOut.textContent = targetSlider.value; });
+
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+    video.srcObject = stream;
+    statusMsg.textContent = 'Cámara lista';
+  } catch(e) {
+    statusMsg.textContent = '⚠ Error al acceder a la cámara — revisa los permisos del navegador';
+  }
+}
+startCamera();
+
+gestureSelect.addEventListener('change', () => {
+  const g = gestureSelect.value;
+  startBtn.disabled = !g;
+  currentGestureEl.textContent = g || '—';
+  if (g && !photos[g]) photos[g] = [];
+  updateProgress();
+});
+
+startBtn.addEventListener('click', () => {
+  if (!gestureSelect.value) return;
+  capturing = true;
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
+  progressWrap.style.display = 'block';
+  statusMsg.textContent = 'Capturando...';
+  const ms = parseFloat(intervalSlider.value) * 1000;
+  intervalId = setInterval(capturePhoto, ms);
+});
+
+stopBtn.addEventListener('click', () => {
+  capturing = false;
+  clearInterval(intervalId);
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+  statusMsg.textContent = 'Pausado';
+  updateDownloadBtn();
+});
+
+function capturePhoto() {
+  const gesture = gestureSelect.value;
+  if (!gesture) return;
+  const target = parseInt(targetSlider.value);
+  if ((photos[gesture] || []).length >= target) {
+    stopBtn.click();
+    statusMsg.textContent = `¡Objetivo de ${target} fotos alcanzado para ${gesture}!`;
+    return;
+  }
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  ctx.save();
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+  ctx.restore();
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  if (!photos[gesture]) photos[gesture] = [];
+  photos[gesture].push(dataUrl);
+  const total = Object.values(photos).reduce((s, a) => s + a.length, 0);
+  photoCountEl.textContent = total;
+  addPreview(dataUrl);
+  updateProgress();
+  updateDownloadBtn();
+}
+
+function addPreview(dataUrl) {
+  const img = document.createElement('img');
+  img.src = dataUrl;
+  previewGrid.insertBefore(img, previewGrid.firstChild);
+  if (previewGrid.children.length > 16) previewGrid.removeChild(previewGrid.lastChild);
+}
+
+function updateProgress() {
+  const gesture = gestureSelect.value;
+  if (!gesture) return;
+  const count = (photos[gesture] || []).length;
+  const target = parseInt(targetSlider.value);
+  const pct = Math.min(100, Math.round((count / target) * 100));
+  progressFill.style.width = pct + '%';
+  progressPct.textContent = pct + '%';
+  progressLabel.textContent = `${gesture}: ${count} / ${target}`;
+}
+
+function updateDownloadBtn() {
+  const total = Object.values(photos).reduce((s, a) => s + a.length, 0);
+  downloadBtn.disabled = total === 0;
+}
+
+downloadBtn.addEventListener('click', async () => {
+  const total = Object.values(photos).reduce((s, a) => s + a.length, 0);
+  if (total === 0) return;
+  statusMsg.textContent = 'Generando ZIP...';
+  downloadBtn.disabled = true;
+  const zip = new JSZip();
+  for (const [gesture, dataUrls] of Object.entries(photos)) {
+    if (!dataUrls.length) continue;
+    const folder = zip.folder(gesture);
+    dataUrls.forEach((dataUrl, i) => {
+      const base64 = dataUrl.split(',')[1];
+      folder.file(`${gesture}_${String(i+1).padStart(4,'0')}.jpg`, base64, { base64: true });
+    });
+  }
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'asl_fotos.zip';
+  a.click();
+  URL.revokeObjectURL(url);
+  statusMsg.textContent = 'ZIP descargado';
+  downloadBtn.disabled = false;
+});
+</script>
+</body>
+</html>

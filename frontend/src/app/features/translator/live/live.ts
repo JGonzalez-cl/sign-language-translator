@@ -1,5 +1,4 @@
-// src/app/features/translator/live/live.ts
-import { Component, inject, signal, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, inject, signal, ElementRef, ViewChild, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
@@ -12,7 +11,7 @@ type State = 'idle' | 'connecting' | 'connected' | 'finished' | 'error';
   templateUrl: './live.html',
   styleUrl: './live.scss',
 })
-export class Live implements OnDestroy {
+export class Live implements OnInit, OnDestroy {
 
   readonly GESTOS_ESPECIALES = new Set(['nothing', 'del', 'space']);
 
@@ -32,15 +31,24 @@ export class Live implements OnDestroy {
 
   private sessionStartTime = 0;
   private timeoutWarning: any = null;
-  readonly SESSION_MAX = 180000; // 3 minutos en ms
+  readonly SESSION_MAX = 180000;
   private ultimoGestoTimestamp = 0;
-  readonly REPEAT_DELAY = 2000; // 2 segundos
+  readonly REPEAT_DELAY = 2000;
   private stream: MediaStream | null = null;
   private ws: WebSocket | null = null;
   private frameInterval: any = null;
-  readonly FPS_INTERVAL = 150; // ~6-7 FPS
+  readonly FPS_INTERVAL = 150;
 
-  // ── Sesión ────────────────────────────────────────────────────────────────────
+  private onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Backspace' && this.state() === 'connected') {
+      e.preventDefault();
+      this.secuencia.set(this.secuencia().slice(0, -1));
+    }
+  };
+
+  ngOnInit() {
+    window.addEventListener('keydown', this.onKeyDown);
+  }
 
   async startSession() {
     this.state.set('connecting');
@@ -48,7 +56,6 @@ export class Live implements OnDestroy {
     this.secuencia.set('');
     this.ultimoGesto.set('');
 
-  // 1. Abrir cámara
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     } catch {
@@ -57,7 +64,6 @@ export class Live implements OnDestroy {
       return;
     }
 
-  // 2. Conectar WebSocket
     const wsUrl = `${environment.wsUrl}/predictions/live`;
     this.ws = new WebSocket(wsUrl);
 
@@ -75,30 +81,30 @@ export class Live implements OnDestroy {
         this.sessionStartTime = Date.now();
         this.timeoutWarning = setTimeout(() => {
           this.stopSession();
-        }, this.SESSION_MAX - 1000); // 1 segundo antes del timeout del backend
-        // Esperar a que Angular renderice el <video> tras cambiar el estado
+        }, this.SESSION_MAX - 1000);
         this.waitForVideoAndAssign();
       } else if (msg.type === 'prediction') {
-          const gestoPrevio = this.ultimoGestoReal();
-          this.ultimoGesto.set(msg.gesto);
-          this.ultimaConfianza.set(msg.confianza);
+        const gestoPrevio = this.ultimoGestoReal();
+        this.ultimoGesto.set(msg.gesto);
+        this.ultimaConfianza.set(msg.confianza);
 
-          if (msg.gesto === 'del' && gestoPrevio !== 'del') {
-            this.secuencia.set(this.secuencia().slice(0, -1));
-            this.ultimoGestoReal.set('');
-          } else if (msg.gesto === 'space') {
-            if (gestoPrevio !== 'space') {
-              this.secuencia.set(this.secuencia() + ' ');
-            }
-            this.ultimoGestoReal.set('space');
-          } else if (!this.GESTOS_ESPECIALES.has(msg.gesto)) {
-            const ahora = Date.now();
-            if (msg.gesto !== gestoPrevio || ahora - this.ultimoGestoTimestamp >= this.REPEAT_DELAY) {
-              this.secuencia.set(this.secuencia() + msg.gesto);
-            }
-            this.ultimoGestoReal.set(msg.gesto);
-            this.ultimoGestoTimestamp = ahora;
+        if (msg.gesto === 'del' && gestoPrevio !== 'del') {
+          this.secuencia.set(this.secuencia().slice(0, -1));
+          this.ultimoGestoReal.set('');
+        } else if (msg.gesto === 'space') {
+          if (gestoPrevio !== 'space') {
+            this.secuencia.set(this.secuencia() + ' ');
           }
+          this.ultimoGestoReal.set('space');
+        } else if (!this.GESTOS_ESPECIALES.has(msg.gesto)) {
+          const ahora = Date.now();
+          if (msg.gesto !== gestoPrevio || ahora - this.ultimoGestoTimestamp >= this.REPEAT_DELAY) {
+            this.secuencia.set(this.secuencia() + msg.gesto);
+          }
+          this.ultimoGestoReal.set(msg.gesto);
+          this.ultimoGestoTimestamp = ahora;
+        }
+      } else if (msg.type === 'error') {
         console.warn('WS error:', msg.detail);
       }
     };
@@ -122,7 +128,6 @@ export class Live implements OnDestroy {
   }
 
   private waitForVideoAndAssign() {
-    // Reintenta hasta que el elemento <video> esté en el DOM
     const interval = setInterval(() => {
       if (this.videoEl?.nativeElement) {
         this.videoEl.nativeElement.srcObject = this.stream;
@@ -130,8 +135,6 @@ export class Live implements OnDestroy {
         this.startSendingFrames();
       }
     }, 50);
-
-    // Timeout de seguridad — para si el elemento nunca aparece
     setTimeout(() => clearInterval(interval), 3000);
   }
 
@@ -141,8 +144,6 @@ export class Live implements OnDestroy {
     }
     this.ws?.close();
   }
-
-  // ── Frames ────────────────────────────────────────────────────────────────────
 
   startSendingFrames() {
     const canvas = this.canvasEl?.nativeElement;
@@ -156,7 +157,6 @@ export class Live implements OnDestroy {
       canvas.height = video.videoHeight;
 
       const ctx = canvas.getContext('2d')!;
-      // Voltear horizontalmente para corregir efecto espejo
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
       ctx.drawImage(video, 0, 0);
@@ -193,5 +193,6 @@ export class Live implements OnDestroy {
     this.stopSendingFrames();
     this.stopCamera();
     this.ws?.close();
+    window.removeEventListener('keydown', this.onKeyDown);
   }
 }
