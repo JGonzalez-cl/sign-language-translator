@@ -13,6 +13,9 @@ type State = 'idle' | 'connecting' | 'connected' | 'finished' | 'error';
   styleUrl: './live.scss',
 })
 export class Live implements OnDestroy {
+
+  readonly GESTOS_ESPECIALES = new Set(['nothing', 'del', 'space']);
+
   private authService = inject(AuthService);
   private router = inject(Router);
 
@@ -83,10 +86,12 @@ export class Live implements OnDestroy {
           if (msg.gesto === 'del' && gestoPrevio !== 'del') {
             this.secuencia.set(this.secuencia().slice(0, -1));
             this.ultimoGestoReal.set('');
-          } else if (msg.gesto === 'space' && gestoPrevio !== 'space') {
-            this.secuencia.set(this.secuencia() + ' ');
+          } else if (msg.gesto === 'space') {
+            if (gestoPrevio !== 'space') {
+              this.secuencia.set(this.secuencia() + ' ');
+            }
             this.ultimoGestoReal.set('space');
-          } else if (msg.gesto !== 'nothing') {
+          } else if (!this.GESTOS_ESPECIALES.has(msg.gesto)) {
             const ahora = Date.now();
             if (msg.gesto !== gestoPrevio || ahora - this.ultimoGestoTimestamp >= this.REPEAT_DELAY) {
               this.secuencia.set(this.secuencia() + msg.gesto);
@@ -94,7 +99,6 @@ export class Live implements OnDestroy {
             this.ultimoGestoReal.set(msg.gesto);
             this.ultimoGestoTimestamp = ahora;
           }
-      } else if (msg.type === 'error') {
         console.warn('WS error:', msg.detail);
       }
     };
