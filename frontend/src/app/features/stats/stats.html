@@ -1,0 +1,212 @@
+<div class="min-h-screen bg-gray-50 -mx-4 sm:-mx-6 lg:-mx-8 -my-6 px-4 sm:px-6 lg:px-8 py-6"
+     style="width: 100vw; position: relative; left: 50%; transform: translateX(-50%);">
+  <div class="max-w-2xl mx-auto">
+
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-8">
+      <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 15c-3.314 0-6-2.686-6-6V4h12v5c0 3.314-2.686 6-6 6zm0 0v4m-4 2h8"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M6 4H4a2 2 0 00-2 2v1c0 2.5 1.5 4.5 4 5M18 4h2a2 2 0 012 2v1c0 2.5-1.5 4.5-4 5"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-gray-900 leading-tight">Mis estadísticas</h2>
+        <p class="text-gray-400 text-sm">Resumen de tu actividad de traducción.</p>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="flex flex-col items-center gap-4 py-24 text-gray-400">
+        <div class="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-sm">Cargando estadísticas...</span>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (error()) {
+      <div class="bg-white border border-red-100 rounded-2xl p-5 flex items-start gap-3 shadow-sm">
+        <div class="w-8 h-8 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <p class="text-sm text-gray-600 pt-1">{{ error() }}</p>
+      </div>
+    }
+
+    @if (!loading() && !error() && stats()) {
+
+      <!-- KPI cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Sesiones</p>
+          <p class="text-3xl font-bold text-gray-900">{{ stats()!.total_sesiones }}</p>
+        </div>
+        <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Gestos</p>
+          <p class="text-3xl font-bold text-gray-900">{{ stats()!.gestos_detectados }}</p>
+        </div>
+        <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Confianza</p>
+          <p class="text-3xl font-bold text-indigo-600">
+            {{ (stats()!.confianza_media * 100) | number:'1.0-0' }}<span class="text-lg font-medium">%</span>
+          </p>
+        </div>
+        <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Top gesto</p>
+          @if (stats()!.gesto_mas_detectado) {
+            <p class="text-3xl font-bold text-indigo-600 tracking-widest">
+              {{ stats()!.gesto_mas_detectado }}
+            </p>
+          } @else {
+            <p class="text-sm text-gray-400 mt-2">—</p>
+          }
+        </div>
+      </div>
+
+      <!-- Fila: Completadas vs Interrumpidas + Distribución por modo -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+
+        <!-- Donut completadas vs interrumpidas -->
+        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Estado sesiones</p>
+          <div class="flex items-center justify-between gap-4">
+            <svg viewBox="0 0 80 80" class="w-20 h-20 flex-shrink-0 -rotate-90">
+              @if (stats()!.total_sesiones === 0) {
+                <circle cx="40" cy="40" r="30" fill="none" stroke="#f3f4f6" stroke-width="10"/>
+              } @else {
+                <circle cx="40" cy="40" r="30" fill="none" stroke="#f3f4f6" stroke-width="10"/>
+                <circle cx="40" cy="40" r="30" fill="none" stroke="#22c55e" stroke-width="10"
+                  [attr.stroke-dasharray]="(stats()!.completadas / stats()!.total_sesiones) * 188.5 + ' 188.5'"
+                  stroke-linecap="round"/>
+                @if (stats()!.interrumpidas > 0) {
+                  <circle cx="40" cy="40" r="30" fill="none" stroke="#f87171" stroke-width="10"
+                    [attr.stroke-dasharray]="(stats()!.interrumpidas / stats()!.total_sesiones) * 188.5 + ' 188.5'"
+                    [attr.stroke-dashoffset]="'-' + (stats()!.completadas / stats()!.total_sesiones) * 188.5"
+                    stroke-linecap="round"/>
+                }
+              }
+            </svg>
+            <div class="space-y-2 flex-1">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                  <span class="text-xs text-gray-500">Completadas</span>
+                </div>
+                <span class="text-sm font-semibold text-gray-900">{{ stats()!.completadas }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-red-400 flex-shrink-0"></span>
+                  <span class="text-xs text-gray-500">Interrumpidas</span>
+                </div>
+                <span class="text-sm font-semibold text-gray-900">{{ stats()!.interrumpidas }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Distribución por modo -->
+        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Por modo</p>
+          @if (getModoEntries().length === 0) {
+            <p class="text-sm text-gray-400 text-center py-4">Sin datos</p>
+          } @else {
+            <div class="flex items-center gap-4">
+              <!-- Donut SVG -->
+              <svg viewBox="0 0 80 80" class="w-20 h-20 flex-shrink-0 -rotate-90">
+                <circle cx="40" cy="40" r="36" fill="none" stroke="#f3f4f6" stroke-width="8"/>
+                @for (seg of getDonutSegments(); track seg.color) {
+                  <circle cx="40" cy="40" r="36" fill="none"
+                    [attr.stroke]="seg.color"
+                    stroke-width="8"
+                    [attr.stroke-dasharray]="seg.dash + ' ' + (2 * 3.14159 * 36)"
+                    [attr.stroke-dashoffset]="seg.offset"/>
+                }
+              </svg>
+              <!-- Leyenda -->
+              <div class="space-y-1.5 flex-1 min-w-0">
+                @for (entry of getModoEntries(); track entry.modo) {
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                      <span class="w-2 h-2 rounded-full flex-shrink-0"
+                            [style.background-color]="entry.color"></span>
+                      <span class="text-xs text-gray-500 truncate">{{ entry.label }}</span>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-700 flex-shrink-0">{{ entry.pct }}%</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Top 5 gestos — barras horizontales -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm mb-4">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Top 5 gestos</p>
+        @if (stats()!.top_gestos.length === 0) {
+          <p class="text-sm text-gray-400 text-center py-4">Sin gestos detectados todavía.</p>
+        } @else {
+          <div class="space-y-3">
+            @for (g of stats()!.top_gestos; track g.gesto) {
+              <div class="flex items-center gap-3">
+                <span class="w-8 text-sm font-bold text-indigo-600 tracking-widest flex-shrink-0">
+                  {{ g.gesto }}
+                </span>
+                <div class="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    class="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                    [style.width.%]="(g.count / getTopGestoMax()) * 100"
+                  ></div>
+                </div>
+                <span class="text-xs font-semibold text-gray-500 w-6 text-right flex-shrink-0">
+                  {{ g.count }}
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Actividad últimos 14 días — barras verticales -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+          Sesiones · últimos 14 días
+        </p>
+        @if (stats()!.actividad_reciente.length === 0) {
+          <p class="text-sm text-gray-400 text-center py-4">Sin actividad reciente.</p>
+        } @else {
+          <div class="flex items-end gap-1 h-24">
+            @for (day of getLast14Days(); track day.fecha) {
+              <div class="flex-1 flex flex-col items-center gap-1 group">
+                <div class="w-full flex flex-col items-center justify-end" style="height: 72px">
+                  @if (day.count > 0) {
+                    <span class="text-[9px] font-semibold text-indigo-500 mb-0.5">{{ day.count }}</span>
+                  }
+                  <div
+                    class="w-full rounded-t-md transition-all duration-300"
+                    [class.bg-indigo-500]="day.count > 0"
+                    [class.bg-gray-100]="day.count === 0"
+                    [style.height.%]="day.count > 0 ? (day.count / getActividadMax()) * 100 : 8"
+                  ></div>
+                </div>
+                <span class="text-[9px] text-gray-300 group-hover:text-gray-400 transition-colors
+                             rotate-45 origin-left translate-y-1">
+                  {{ day.label }}
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    }
+
+  </div>
+</div>

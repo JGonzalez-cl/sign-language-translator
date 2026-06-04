@@ -49,6 +49,20 @@
       </svg>
       Mi perfil
     </a>
+    <a
+      routerLink="/stats"
+      class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700
+            hover:bg-gray-50 transition"
+      (click)="closeSidebar()"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 15c-3.314 0-6-2.686-6-6V4h12v5c0 3.314-2.686 6-6 6zm0 0v4m-4 2h8"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M6 4H4a2 2 0 00-2 2v1c0 2.5 1.5 4.5 4 5M18 4h2a2 2 0 012 2v1c0 2.5-1.5 4.5-4 5"/>
+      </svg>
+      Mis estadísticas
+    </a>
 
     <!-- Sección Admin — solo visible para admins -->
     @if (authService.isAdmin()) {
