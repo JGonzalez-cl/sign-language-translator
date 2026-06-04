@@ -10,6 +10,7 @@ from src.schemas.user import (
     StatusUpdate,
     UsuarioResponse,
     UsuarioUpdate,
+    UserStatsResponse,
 )
 from src.services.users import UsersService
 
@@ -40,6 +41,13 @@ async def update_password(
     service = UsersService(db)
     await service.update_password(current_user, data)
 
+@router.get("/me/stats", response_model=UserStatsResponse)
+async def get_my_stats(
+    current_user: Usuario = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = UsersService(db)
+    return await service.get_my_stats(current_user)
 
 @router.delete("/me", status_code=204)
 async def delete_own_account(

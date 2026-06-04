@@ -76,6 +76,9 @@ class UsersService:
                 detail="Usuario no encontrado",
             )
         return usuario
+    
+    async def get_my_stats(self, usuario: Usuario) -> dict:
+        return await self.repo.get_stats(usuario.id)
 
     async def update_user_status(self, user_id: int,
                                   data: StatusUpdate,

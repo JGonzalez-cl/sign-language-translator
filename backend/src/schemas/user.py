@@ -82,3 +82,22 @@ class UsuarioAdminResponse(UsuarioResponse):
 
 class StatusUpdate(BaseModel):
     status: UserStatus
+    
+class TopGesto(BaseModel):
+    gesto: str
+    count: int
+
+class ActividadDia(BaseModel):
+    fecha: str
+    count: int
+
+class UserStatsResponse(BaseModel):
+    total_sesiones: int
+    completadas: int
+    interrumpidas: int
+    gestos_detectados: int
+    confianza_media: float
+    gesto_mas_detectado: str | None
+    top_gestos: list[TopGesto]
+    por_modo: dict[str, int]
+    actividad_reciente: list[ActividadDia]
